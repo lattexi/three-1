@@ -2,6 +2,8 @@ import "./style.css";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 
 let camera, scene, renderer, cube, pyramid, pentagon, animatedGroup, allObjects;
 
@@ -76,11 +78,33 @@ function init() {
 
   controls.maxPolarAngle = Math.PI / 2;
 
+  new HDRLoader()
+    .setPath("textures/")
+    .load("german_town_street_1k.hdr", function (texture) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+
+      scene.background = texture;
+      scene.environment = texture;
+
+      // model
+
+      const loader = new GLTFLoader().setPath(
+        "models/gltf/DamagedHelmet/glTF/"
+      );
+      loader.load("DamagedHelmet.gltf", async function (gltf) {
+        const model = gltf.scene;
+
+        await renderer.compileAsync(model, camera, scene);
+
+        scene.add(model);
+      });
+    });
+
   window.addEventListener("resize", onWindowResize);
 }
 
 function animate() {
-  // cube.rotation.x += 0.01;
+  // cube.rotation.x += 0.01; s
   cube.rotation.y += 0.01;
   pyramid.rotation.y -= 0.1;
   animatedGroup.rotation.x += 0.005;
